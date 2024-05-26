@@ -1,1 +1,2 @@
-# goit-algo-fp
+# goit-algo-fp 
+FP HW 

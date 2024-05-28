@@ -242,6 +242,77 @@ draw_heap(root)
 
 
 
+\Завдання 4 Доопрацювання 
+
+import heapq
+import networkx as nx
+import matplotlib.pyplot as plt
+class Node:
+    """
+    Клас, що представляє вузол двійкового дерева.
+    """
+    def __init__(self, key, color="skyblue"):
+        self.left = None
+        self.right = None
+        self.val = key
+        self.color = color
+def list_to_heap_tree(lst):
+    """
+    Функція, що перетворює довільний список чисел у двійкову кучу і будує дерево.
+    """
+    if not lst:
+        return None
+    # Створюємо кучу з списку
+    heapq.heapify(lst)
+    # Створюємо вузли для кожного елемента у списку
+    nodes = [Node(key) for key in lst]
+    # Зв'язуємо вузли для створення двійкового дерева
+    for i in range(len(lst)):
+        left_index = 2 * i + 1
+        right_index = 2 * i + 2
+        if left_index < len(lst):
+            nodes[i].left = nodes[left_index]
+        if right_index < len(lst):
+            nodes[i].right = nodes[right_index]
+    return nodes[0]
+def add_heap_edges(graph, node, pos, x=0, y=0, layer=1):
+    """
+    Функція, що додає ребра до графу та обчислює позиції вузлів для візуалізації двійкової купи.
+    """
+    if node is not None:
+        graph.add_node(node.val, color=node.color)
+        if node.left:
+            graph.add_edge(node.val, node.left.val)
+            l = x - 1 / 2 ** layer
+            pos[node.left.val] = (l, y - 1)
+            add_heap_edges(graph, node.left, pos, x=l, y=y - 1, layer=layer + 1)
+        if node.right:
+            graph.add_edge(node.val, node.right.val)
+            r = x + 1 / 2 ** layer
+            pos[node.right.val] = (r, y - 1)
+            add_heap_edges(graph, node.right, pos, x=r, y=y - 1, layer=layer + 1)
+    return graph
+def draw_heap(heap_root):
+    """
+    Функція, що візуалізує двійкову купу.
+    """
+    heap = nx.DiGraph()
+    pos = {heap_root.val: (0, 0)}
+    heap = add_heap_edges(heap, heap_root, pos)
+    colors = [node[1]['color'] for node in heap.nodes(data=True)]
+    plt.figure(figsize=(8, 5))
+    nx.draw(heap, pos=pos, with_labels=True, arrows=False, node_size=2500, node_color=colors)
+    plt.show()
+# Приклад використання
+lst = [10, 4, 9, 1, 7, 5, 3]
+root = list_to_heap_tree(lst)
+draw_heap(root) 
+
+
+
+
+
+
 \Завдання 5 
 
 import networkx as nx
@@ -304,6 +375,93 @@ def draw_tree(tree_root, traversal_type):
     rgb_colors = ['#%02x%02x%02x' % (int(r * 255), int(g * 255), int(b * 255)) for r, g, b in [colorsys.hsv_to_rgb(*hsv) for hsv in hsv_colors]]
     plt.figure(figsize=(8, 5))
     nx.draw(tree, pos=pos, with_labels=True, arrows=False, node_size=2500, node_color=rgb_colors)
+    plt.title(f"{traversal_type.upper()} Traversal")
+    plt.show()
+# Створюємо дерево
+root = Node(0)
+root.left = Node(4)
+root.left.left = Node(5)
+root.left.right = Node(10)
+root.right = Node(1)
+root.right.left = Node(3)
+# Відображаємо дерево з обходом в глибину та в ширину
+draw_tree(root, 'dfs')
+draw_tree(root, 'bfs') 
+
+
+
+
+
+\Завдання 5 Доопрацювання 
+
+import networkx as nx
+import matplotlib.pyplot as plt
+from collections import deque
+import colorsys
+class Node:
+    """Клас вузла бінарного дерева"""
+    def __init__(self, key, color="skyblue"):
+        self.left = None
+        self.right = None
+        self.val = key
+        self.color = color
+def add_edges(graph, node, pos, x=0, y=0, layer=1):
+    """Рекурсивна функція для додавання ребер та вузлів до графа"""
+    if node is not None:
+        graph.add_node(node.val, color=node.color)
+        if node.left:
+            graph.add_edge(node.val, node.left.val)
+            l = x - 1 / 2 ** layer
+            pos[node.left.val] = (l, y - 1)
+            add_edges(graph, node.left, pos, x=l, y=y - 1, layer=layer + 1)
+        if node.right:
+            graph.add_edge(node.val, node.right.val)
+            r = x + 1 / 2 ** layer
+            pos[node.right.val] = (r, y - 1)
+            add_edges(graph, node.right, pos, x=r, y=y - 1, layer=layer + 1)
+    return graph
+def dfs_traversal(root, nodes):
+    """Функція обходу дерева в глибину"""
+    if root is None:
+        return
+    nodes.append(root)
+    dfs_traversal(root.left, nodes)
+    dfs_traversal(root.right, nodes)
+def bfs_traversal(root, nodes):
+    """Функція обходу дерева в ширину"""
+    if root is None:
+        return
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        nodes.append(node)
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+def assign_colors(nodes):
+    """Функція для призначення кольорів вузлам від темних до світлих відтінків"""
+    hsv_colors = [(i / len(nodes), 1, 1) for i in range(len(nodes))]
+    rgb_colors = [
+        '#{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
+        for r, g, b in [colorsys.hsv_to_rgb(*hsv) for hsv in hsv_colors]
+    ]
+    for node, color in zip(nodes, rgb_colors):
+        node.color = color
+def draw_tree(tree_root, traversal_type):
+    """Функція для візуалізації бінарного дерева"""
+    tree = nx.DiGraph()
+    pos = {tree_root.val: (0, 0)}
+    tree = add_edges(tree, tree_root, pos)
+    nodes = []
+    if traversal_type == 'dfs':
+        dfs_traversal(tree_root, nodes)
+    elif traversal_type == 'bfs':
+        bfs_traversal(tree_root, nodes)
+    assign_colors(nodes)
+    colors = [node.color for node in nodes]
+    plt.figure(figsize=(8, 5))
+    nx.draw(tree, pos=pos, with_labels=True, arrows=False, node_size=2500, node_color=colors)
     plt.title(f"{traversal_type.upper()} Traversal")
     plt.show()
 # Створюємо дерево
